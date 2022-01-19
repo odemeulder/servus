@@ -4,7 +4,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &str> {
+    pub fn new(_args: &[String]) -> Result<Config, &str> {
         
         // if args.len() < 2 {
         //     return Err("not enough arguments");
@@ -16,7 +16,7 @@ impl Config {
     }
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+pub fn run(_config: Config) -> Result<(), Box<dyn Error>> {
 
     println!("Servus Webserver");
   

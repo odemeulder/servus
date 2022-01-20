@@ -5,14 +5,21 @@ use std::io::Result;
 use std::str;
 use std::io::prelude::*;
 use std::fs;
-
 use std::{thread, time};
+
+use crate::thread_pool::ThreadPool;
 
 
 pub struct Server {
   address: &'static str
 }
 
+// Read the stream to get the request information
+/*GET /index.html HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/7.64.1
+Accept: 
+*/
 fn read_stream(stream: &mut TcpStream) -> Vec<u8> {
   let buffer_size = 512;
   let mut request_buffer = vec![];
@@ -59,7 +66,7 @@ fn prepare_response(method: String, path: String) -> String {
   let (status_line, file_name) = match(method.as_str(), path.as_str()) {
     ("GET", "/index.html") => ("HTTP/1.1 200 OK", "hello.html"),
     ("GET", "/olivier.html") => { 
-      thread::sleep(time::Duration::from_secs(5));
+      thread::sleep(time::Duration::from_secs(10));
       ("HTTP/1.1 200 OK", "olivier.html") 
     },
     _ => ("HTTP/1.1 404 NotFound", "404.html"),
@@ -75,20 +82,19 @@ fn prepare_response(method: String, path: String) -> String {
   return response;
 }
 
-fn handle_client(mut stream: TcpStream) -> Result<()> {
+fn handle_client(mut stream: TcpStream) -> () {
   println!("Request");
 
   let request_buffer = read_stream(&mut stream);
   let request = String::from_utf8_lossy(&request_buffer);
-  println!("{}", request);
+  // println!("{}", request);
 
   let (method, path, _) = parse_request(request.to_string());
   
   let response = prepare_response(method, path);
-  stream.write(response.as_bytes())?;
-  stream.flush()?;
+  stream.write(response.as_bytes()).unwrap();
+  stream.flush().unwrap();
   
-  Ok(())
 }
 
 impl Server {
@@ -100,11 +106,14 @@ impl Server {
 
   pub fn serve(&self) -> Result<()> {
     let listener = TcpListener::bind(self.address)?;
+
+    let pool = ThreadPool::new(3);
+
     loop {
       match listener.accept() {
         Ok((stream, socket_address)) => {
           println!("Socket address: {}", socket_address);
-          std::thread::spawn(move || {
+          pool.execute( || {
             handle_client(stream)
           });
         },

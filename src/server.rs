@@ -51,6 +51,7 @@ fn read_stream(stream: &mut TcpStream) -> Vec<u8> {
   return request_buffer;
 }
 
+// Mainly parse the first line to get the Method and Path (and Version)
 fn parse_request(req: String) -> (String, String, String) {
   for (idx, line) in req.lines().enumerate() {
     if idx == 0 {
@@ -61,6 +62,8 @@ fn parse_request(req: String) -> (String, String, String) {
   return (String::from(""),String::from(""),String::from(""))
 }
 
+
+// Creates the response, returns an html file from the file system
 fn prepare_response(method: String, path: String) -> String {
 
   let (status_line, file_name) = match(method.as_str(), path.as_str()) {
@@ -82,6 +85,8 @@ fn prepare_response(method: String, path: String) -> String {
   return response;
 }
 
+
+// Hanles a single request
 fn handle_client(mut stream: TcpStream) -> () {
   println!("Request");
 

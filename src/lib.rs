@@ -1,5 +1,7 @@
 use std::error::Error;
 
+mod server;
+
 pub struct Config {
 }
 
@@ -10,8 +12,6 @@ impl Config {
         //     return Err("not enough arguments");
         // }
 
-        // let filename = args[1].clone();
-
         Ok(Config { })
     }
 }
@@ -19,6 +19,9 @@ impl Config {
 pub fn run(_config: Config) -> Result<(), Box<dyn Error>> {
 
     println!("Servus Webserver");
-  
+
+    let server = server::Server::new();
+    server.serve().expect("error");
+
     Ok(())
 }
